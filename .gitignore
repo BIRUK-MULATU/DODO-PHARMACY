@@ -1,0 +1,20 @@
+# Backend
+rxpharma-backend/target/
+rxpharma-backend/*.log
+
+# Frontend
+rxpharma-frontend/node_modules/
+rxpharma-frontend/dist/
+
+# Environment
+.env
+*.env
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
