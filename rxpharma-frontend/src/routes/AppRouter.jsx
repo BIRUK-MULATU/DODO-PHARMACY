@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import ProtectedRoute from './ProtectedRoute'
 import LoginPage from '../pages/auth/LoginPage'
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage'
+import DashboardPage from '../pages/dashboard/DashboardPage'
 
 export default function AppRouter() {
   const { user } = useAuth()
@@ -13,7 +14,7 @@ export default function AppRouter() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/" element={<Navigate to={user ? '/dashboard' : '/login'} />} />
       <Route path="/dashboard" element={
-        <ProtectedRoute><div className="p-8 text-2xl font-bold">Dashboard coming soon...</div></ProtectedRoute>
+        <ProtectedRoute><DashboardPage /></ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
