@@ -1,34 +1,37 @@
 # RxPharma
 
-RxPharma is a full-stack pharmacy management system for managing medicines, suppliers, prescriptions, sales, purchase orders, users, authentication, and operational dashboard statistics.
+RxPharma is a professional pharmacy management system built as a modern full-stack application. It supports inventory, supplier management, prescriptions, sales, purchase orders, user administration, and dashboard reporting.
 
-The project is organized as a Spring Boot REST API backed by PostgreSQL and Flyway migrations, with a React/Vite frontend prepared as the client application layer.
+## Project Overview
+
+This repository includes:
+
+- `rxpharma-backend`: a Spring Boot REST API with JWT-based security, PostgreSQL persistence, and Flyway-managed database migrations.
+- `rxpharma-frontend`: a React + Vite single-page application that provides the pharmacy user interface.
 
 ## Architecture
 
 ![RxPharma Architecture](./rxpharma_Architecture.png)
 
-RxPharma follows a layered client-server architecture:
+RxPharma is implemented with a layered client-server architecture:
 
-- **Frontend:** React + Vite application intended for pharmacy staff workflows.
-- **API Layer:** Spring Boot REST controllers expose secured endpoints under `/api/**`.
-- **Security Layer:** Spring Security validates JWT tokens and enforces role-based access control.
-- **Service Layer:** Business logic for inventory, prescriptions, sales, suppliers, purchase orders, users, and dashboard summaries.
-- **Persistence Layer:** Spring Data JPA repositories map domain entities to PostgreSQL tables.
-- **Database Layer:** PostgreSQL stores application data, while Flyway manages versioned schema migrations and seed data.
+- **Frontend**: React + Vite SPA delivering pharmacy workflows and secure API interactions.
+- **API layer**: Spring Boot controllers exposing REST endpoints under `/api/**`.
+- **Security layer**: Spring Security enforces authentication, JWT validation, and role-based authorization.
+- **Service layer**: business logic for stock, prescriptions, sales, suppliers, purchase orders, users, and dashboard metrics.
+- **Persistence layer**: Spring Data JPA repositories manage domain entities.
+- **Database layer**: PostgreSQL stores transactional data, and Flyway manages schema migration versions.
 
-## Features
+## Key Features
 
-- JWT-based authentication and stateless API sessions.
-- Role-based authorization for `ADMIN`, `PHARMACIST`, `CASHIER`, and `SUPPLIER_MANAGER`.
-- User management, role updates, password changes, and password reset token support.
-- Drug inventory management with stock adjustment, low-stock alerts, expiry alerts, and expired-drug checks.
-- Supplier management with active and on-hold supplier statuses.
-- Prescription creation, prescription-drug assignment, dispensing, cancellation, and search.
-- Sales recording with sale items and invoice retrieval.
-- Purchase order creation, status tracking, delivery handling, and cancellation.
-- Dashboard statistics for key pharmacy operations.
-- PostgreSQL schema management through Flyway migrations.
+- JWT-based authentication and stateless API sessions
+- Role-based authorization for administrators, pharmacists, cashiers, and supplier managers
+- Drug inventory management with stock and expiry checks
+- Supplier lifecycle management and purchase order tracking
+- Prescription creation, dispensing, cancellation, and search
+- Sales registration, invoice retrieval, and financial tracking
+- Dashboard metrics for operational visibility
+- PostgreSQL persistence with Flyway migration support
 
 ## Tech Stack
 
@@ -37,51 +40,50 @@ RxPharma follows a layered client-server architecture:
 | Frontend | React, Vite, Tailwind CSS, Axios, React Router |
 | Backend | Java 21, Spring Boot 3.4.5, Spring Web, Spring Security |
 | Persistence | Spring Data JPA, Hibernate |
-| Database | PostgreSQL 15 |
+| Database | PostgreSQL |
 | Migrations | Flyway |
-| Authentication | JWT, BCrypt password hashing |
+| Authentication | JWT, BCrypt |
 | Tooling | Maven Wrapper, Docker Compose, ESLint |
 
 ## Repository Structure
 
 ```text
 rxpharma/
-|-- README.md
-|-- rxpharma_Architecture.png
-|-- docs/
-|   `-- architecture.svg
-|-- rxpharma-backend/
-|   |-- docker-compose.yml
-|   |-- pom.xml
-|   `-- src/
-|       |-- main/java/com/rxpharma/
-|       |   |-- controller/
-|       |   |-- dto/
-|       |   |-- entity/
-|       |   |-- exception/
-|       |   |-- repository/
-|       |   |-- security/
-|       |   `-- service/
-|       `-- main/resources/
-|           |-- application.properties
-|           `-- db/migration/
-`-- rxpharma-frontend/
-    |-- package.json
-    `-- src/
+├── README.md
+├── rxpharma_Architecture.png
+├── docs/
+├── rxpharma-backend/
+│   ├── docker-compose.yml
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/rxpharma/
+│       │   ├── controller/
+│       │   ├── dto/
+│       │   ├── entity/
+│       │   ├── exception/
+│       │   ├── repository/
+│       │   ├── security/
+│       │   └── service/
+│       └── main/resources/
+│           ├── application.properties
+│           └── db/migration/
+└── rxpharma-frontend/
+    ├── package.json
+    └── src/
 ```
 
-## Backend API Modules
+## Backend API Overview
 
-| Module | Base Path | Purpose |
+| Module | Path | Purpose |
 | --- | --- | --- |
-| Authentication | `/api/auth` | Login, registration, logout, forgot password, reset password |
+| Authentication | `/api/auth` | Login, register, forgot/reset password |
 | Users | `/api/users` | User administration and role management |
-| Drugs | `/api/drugs` | Inventory CRUD, stock adjustment, stock and expiry alerts |
+| Drugs | `/api/drugs` | Inventory CRUD, stock and expiry alerts |
 | Suppliers | `/api/suppliers` | Supplier CRUD and status management |
-| Prescriptions | `/api/prescriptions` | Prescription workflow and dispensing |
-| Sales | `/api/sales` | Sales, sale items, search, and invoice retrieval |
-| Purchase Orders | `/api/purchase-orders` | Ordering, status updates, delivery, and cancellation |
-| Dashboard | `/api/dashboard/stats` | Summary metrics for the application dashboard |
+| Prescriptions | `/api/prescriptions` | Prescription lifecycle and dispensing |
+| Sales | `/api/sales` | Sales, sale items, invoices |
+| Purchase Orders | `/api/purchase-orders` | Orders, delivery, cancellation |
+| Dashboard | `/api/dashboard/stats` | Operational summary metrics |
 
 ## Prerequisites
 
@@ -92,50 +94,32 @@ rxpharma/
 
 ## Getting Started
 
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone <repository-url>
 cd rxpharma
 ```
 
-### 2. Start PostgreSQL
+### 2. Start the database
 
 ```bash
 cd rxpharma-backend
 docker compose up -d
 ```
 
-The database container exposes PostgreSQL on port `5435`.
+Default PostgreSQL settings are configured for local development on port `5435`.
 
-Default local database settings:
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5435/rxpharma_db
-spring.datasource.username=rxpharma_user
-spring.datasource.password=rxpharma_pass
-```
-
-### 3. Run the Backend
+### 3. Run the backend
 
 ```bash
 cd rxpharma-backend
 ./mvnw spring-boot:run
 ```
 
-The backend runs on:
+The backend service starts at `http://localhost:8083`.
 
-```text
-http://localhost:8083
-```
-
-Flyway runs automatically on startup and applies migrations from:
-
-```text
-rxpharma-backend/src/main/resources/db/migration
-```
-
-### 4. Run the Frontend
+### 4. Run the frontend
 
 Open a second terminal:
 
@@ -145,13 +129,7 @@ npm install
 npm run dev
 ```
 
-The frontend development server typically runs on:
-
-```text
-http://localhost:5173
-```
-
-The backend CORS configuration allows requests from `http://localhost:5173` and `http://localhost:3000`.
+The frontend development server typically runs at `http://localhost:5173`.
 
 ## Common Commands
 
@@ -178,30 +156,17 @@ npm run preview
 
 ## Configuration Notes
 
-- The backend uses stateless JWT authentication.
-- Public routes are limited to `/api/auth/**`; all other API routes require authentication.
-- Passwords are hashed with BCrypt.
-- `spring.jpa.hibernate.ddl-auto=validate` is used, so schema changes should be made through Flyway migrations.
-- The JWT secret in `application.properties` is a development placeholder and should be replaced before production deployment.
+- The backend secures APIs with JWT tokens and BCrypt password hashing.
+- Only `/api/auth/**` is public; all other endpoints require authentication.
+- Database schema changes are managed via Flyway migrations in `rxpharma-backend/src/main/resources/db/migration`.
+- Update the JWT secret and production database credentials before deploying.
 
-## Database Overview
+## Architecture Summary
 
-Flyway migrations create the core database model:
+RxPharma is a modern two-tier application where a React frontend consumes a Spring Boot REST API.
 
-- `users`
-- `suppliers`
-- `drugs`
-- `prescriptions`
-- `prescription_drugs`
-- `sales`
-- `sale_items`
-- `purchase_orders`
-- `password_reset_tokens`
+The frontend is responsible for user workflows and API calls, while the backend handles authentication, authorization, business rules, and persistence. The backend applies Spring Security for JWT validation, service classes for domain logic, and Spring Data JPA for PostgreSQL storage. Flyway ensures database schema changes are repeatable and version controlled.
 
-Sample supplier and drug records are inserted by the seed migration.
+## License
 
-## Team Members
-
-- Biruk Mulatu
-- Yesehak Abraham
-- Habtamu Zeleke
+This repository is provided for development and evaluation purposes.
