@@ -21,7 +21,7 @@ public class SupplierController {
     private final SupplierService supplierService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','SUPPLIER_MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPPLIER_MANAGER','PHARMACIST')")
     public ResponseEntity<List<SupplierResponse>> getAllSuppliers() {
         List<SupplierResponse> suppliers = supplierService.getAllSuppliers()
                 .stream().map(this::toResponse).collect(Collectors.toList());
