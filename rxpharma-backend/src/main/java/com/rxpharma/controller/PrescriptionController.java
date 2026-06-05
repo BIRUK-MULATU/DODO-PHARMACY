@@ -24,7 +24,7 @@ public class PrescriptionController {
     private final PrescriptionService prescriptionService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST')")
+    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','CASHIER')")
     public ResponseEntity<Page<PrescriptionResponse>> getAllPrescriptions(Pageable pageable) {
         return ResponseEntity.ok(
                 prescriptionService.getAllPrescriptions(pageable).map(this::toResponse)
@@ -32,13 +32,13 @@ public class PrescriptionController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST')")
+    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','CASHIER')")
     public ResponseEntity<PrescriptionResponse> getPrescriptionById(@PathVariable Long id) {
         return ResponseEntity.ok(toResponse(prescriptionService.getPrescriptionById(id)));
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST')")
+    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','CASHIER')")
     public ResponseEntity<Page<PrescriptionResponse>> searchByPatientName(
             @RequestParam String patientName,
             Pageable pageable) {
@@ -49,7 +49,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/{id}/drugs")
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST')")
+    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','CASHIER')")
     public ResponseEntity<List<PrescriptionDrugResponse>> getPrescriptionDrugs(
             @PathVariable Long id) {
         return ResponseEntity.ok(prescriptionService.getPrescriptionDrugs(id));
