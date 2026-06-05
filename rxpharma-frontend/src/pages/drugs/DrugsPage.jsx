@@ -3,6 +3,8 @@ import DashboardLayout from '../../components/layout/DashboardLayout'
 import { drugApi } from '../../api/drugApi'
 import { supplierApi } from '../../api/supplierApi'
 import { useAuth } from '../../context/AuthContext'
+import CategoriesManager from '../../components/common/CategoriesManager'
+import { getCategories } from '../../utils/constants'
 
 const Badge = ({ children, color }) => {
   const colors = {
@@ -22,6 +24,7 @@ export default function DrugsPage() {
   const { hasRole } = useAuth()
   const [drugs, setDrugs] = useState([])
   const [suppliers, setSuppliers] = useState([])
+  const [categories, setCategories] = useState(getCategories())
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
@@ -29,6 +32,7 @@ export default function DrugsPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [showStockModal, setShowStockModal] = useState(false)
+  const [showCategoriesManager, setShowCategoriesManager] = useState(false)
   const [editDrug, setEditDrug] = useState(null)
   const [selectedDrug, setSelectedDrug] = useState(null)
   const [error, setError] = useState('')
@@ -58,7 +62,9 @@ export default function DrugsPage() {
   useEffect(() => { fetchDrugs() }, [page, category])
 
   useEffect(() => {
-    supplierApi.getAll().then(res => setSuppliers(res.data)).catch(() => {})
+    supplierApi.getAll()
+      .then(res => setSuppliers(res.data))
+      .catch(() => {})
   }, [])
 
   const openCreate = () => {
@@ -87,7 +93,12 @@ export default function DrugsPage() {
     e.preventDefault()
     setError('')
     try {
-      const data = { ...form, price: parseFloat(form.price), stockQty: parseInt(form.stockQty), supplierId: parseInt(form.supplierId) }
+      const data = {
+        ...form,
+        price: parseFloat(form.price),
+        stockQty: parseInt(form.stockQty),
+        supplierId: parseInt(form.supplierId)
+      }
       if (editDrug) {
         await drugApi.update(editDrug.id, data)
         setSuccess('Drug updated successfully')
@@ -105,7 +116,10 @@ export default function DrugsPage() {
   const handleStock = async (e) => {
     e.preventDefault()
     try {
-      await drugApi.adjustStock(selectedDrug.id, { ...stockForm, quantity: parseInt(stockForm.quantity) })
+      await drugApi.adjustStock(selectedDrug.id, {
+        ...stockForm,
+        quantity: parseInt(stockForm.quantity)
+      })
       setSuccess('Stock adjusted successfully')
       setShowStockModal(false)
       fetchDrugs()
@@ -130,9 +144,16 @@ export default function DrugsPage() {
 
   return (
     <DashboardLayout title="Drug Management">
-      {/* Alerts */}
-      {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex justify-between"><span>{error}</span><button onClick={() => setError('')}>✕</button></div>}
-      {success && <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex justify-between"><span>{success}</span><button onClick={() => setSuccess('')}>✕</button></div>}
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex justify-between">
+          <span>{error}</span><button onClick={() => setError('')}>✕</button>
+        </div>
+      )}
+      {success && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex justify-between">
+          <span>{success}</span><button onClick={() => setSuccess('')}>✕</button>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -140,15 +161,29 @@ export default function DrugsPage() {
           <h2 className="text-xl font-bold text-gray-900">Drugs</h2>
           <p className="text-sm text-gray-500">Manage drug inventory</p>
         </div>
-        {hasRole('ADMIN', 'PHARMACIST') && (
-          <button onClick={openCreate}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-            </svg>
-            Add Drug
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {hasRole('ADMIN', 'PHARMACIST') && (
+            <>
+              <button onClick={() => {
+                setShowCategoriesManager(true)
+                setCategories(getCategories())
+              }}
+                className="flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+                Categories
+              </button>
+              <button onClick={openCreate}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+                </svg>
+                Add Drug
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
@@ -161,12 +196,26 @@ export default function DrugsPage() {
         <select value={category} onChange={(e) => { setCategory(e.target.value); setPage(0) }}
           className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
           <option value="">All Categories</option>
-          <option value="Antibiotic">Antibiotic</option>
-          <option value="Analgesic">Analgesic</option>
-          <option value="Antiviral">Antiviral</option>
-          <option value="Antifungal">Antifungal</option>
-          <option value="Supplement">Supplement</option>
+          {categories.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
+      </div>
+
+      {/* Category Pills */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <button onClick={() => setCategory('')}
+          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+            category === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}>
+          All
+        </button>
+        {categories.slice(0, 8).map(c => (
+          <button key={c} onClick={() => setCategory(c)}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+              category === c ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}>
+            {c}
+          </button>
+        ))}
       </div>
 
       {/* Table */}
@@ -231,7 +280,6 @@ export default function DrugsPage() {
           </table>
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
             <p className="text-sm text-gray-500">Page {page + 1} of {totalPages}</p>
@@ -249,11 +297,21 @@ export default function DrugsPage() {
         )}
       </div>
 
+      {/* Categories Manager */}
+      {showCategoriesManager && (
+        <CategoriesManager
+          onClose={() => {
+            setShowCategoriesManager(false)
+            setCategories(getCategories())
+          }}
+        />
+      )}
+
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
               <h3 className="font-semibold text-gray-900">{editDrug ? 'Edit Drug' : 'Add New Drug'}</h3>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
@@ -262,46 +320,53 @@ export default function DrugsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Drug Name</label>
-                  <input required value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Amoxicillin 500mg"/>
+                  <input required value={form.name}
+                    onChange={e => setForm({...form, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Amoxicillin 500mg"/>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">SKU</label>
-                  <input required value={form.sku} onChange={e => setForm({...form, sku: e.target.value})}
+                  <input required value={form.sku}
+                    onChange={e => setForm({...form, sku: e.target.value})}
                     disabled={!!editDrug}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50" placeholder="AMX-500"/>
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
+                    placeholder="AMX-500"/>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
-                  <select required value={form.category} onChange={e => setForm({...form, category: e.target.value})}
+                  <select required value={form.category}
+                    onChange={e => setForm({...form, category: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">Select category</option>
-                    <option>Antibiotic</option>
-                    <option>Analgesic</option>
-                    <option>Antiviral</option>
-                    <option>Antifungal</option>
-                    <option>Supplement</option>
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Price (ETB)</label>
-                  <input required type="number" step="0.01" min="0" value={form.price} onChange={e => setForm({...form, price: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="25.00"/>
+                  <input required type="number" step="0.01" min="0" value={form.price}
+                    onChange={e => setForm({...form, price: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="25.00"/>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Stock Quantity</label>
-                  <input required type="number" min="0" value={form.stockQty} onChange={e => setForm({...form, stockQty: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="100"/>
+                  <input required type="number" min="0" value={form.stockQty}
+                    onChange={e => setForm({...form, stockQty: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="100"/>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Expiry Date</label>
-                  <input required type="date" value={form.expiryDate} onChange={e => setForm({...form, expiryDate: e.target.value})}
+                  <input required type="date" value={form.expiryDate}
+                    onChange={e => setForm({...form, expiryDate: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Supplier</label>
-                <select required value={form.supplierId} onChange={e => setForm({...form, supplierId: e.target.value})}
+                <select required value={form.supplierId}
+                  onChange={e => setForm({...form, supplierId: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="">Select supplier</option>
                   {suppliers.map(s => <option key={s.id} value={s.id}>{s.companyName}</option>)}
@@ -322,7 +387,7 @@ export default function DrugsPage() {
         </div>
       )}
 
-      {/* Stock Adjust Modal */}
+      {/* Stock Modal */}
       {showStockModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
@@ -336,7 +401,8 @@ export default function DrugsPage() {
               </p>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Adjustment Type</label>
-                <select value={stockForm.type} onChange={e => setStockForm({...stockForm, type: e.target.value})}
+                <select value={stockForm.type}
+                  onChange={e => setStockForm({...stockForm, type: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="ADD">Add Stock</option>
                   <option value="SUBTRACT">Subtract Stock</option>
@@ -347,14 +413,17 @@ export default function DrugsPage() {
                 <label className="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
                 <input required type="number" min="1" value={stockForm.quantity}
                   onChange={e => setStockForm({...stockForm, quantity: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="50"/>
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="50"/>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Reason</label>
-                <input value={stockForm.reason} onChange={e => setStockForm({...stockForm, reason: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="New stock received"/>
+                <input value={stockForm.reason}
+                  onChange={e => setStockForm({...stockForm, reason: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="New stock received"/>
               </div>
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3">
                 <button type="button" onClick={() => setShowStockModal(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
                   Cancel

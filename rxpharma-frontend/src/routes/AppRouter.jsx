@@ -10,6 +10,7 @@ import PrescriptionsPage from '../pages/prescriptions/PrescriptionsPage'
 import SalesPage from '../pages/sales/SalesPage'
 import PurchaseOrdersPage from '../pages/purchaseOrders/PurchaseOrdersPage'
 import UsersPage from '../pages/users/UsersPage'
+import PrescriptionInvoicePage from '../pages/sales/PrescriptionInvoicePage'
 
 export default function AppRouter() {
   const { user } = useAuth()
@@ -21,6 +22,11 @@ export default function AppRouter() {
       <Route path="/" element={<Navigate to={user ? '/dashboard' : '/login'} />} />
       <Route path="/dashboard" element={
         <ProtectedRoute><DashboardPage /></ProtectedRoute>
+      } />
+      <Route path="/prescription-invoice" element={
+      <ProtectedRoute roles={['ADMIN', 'CASHIER']}>
+      <PrescriptionInvoicePage />
+        </ProtectedRoute>
       } />
       <Route path="/drugs" element={
         <ProtectedRoute roles={['ADMIN', 'PHARMACIST', 'CASHIER']}>

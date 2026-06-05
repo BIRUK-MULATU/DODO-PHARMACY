@@ -9,4 +9,5 @@ export const prescriptionApi = {
   getDrugs: (id) => api.get(`/api/prescriptions/${id}/drugs`),
   dispense: (id, pharmacistId) => api.patch(`/api/prescriptions/${id}/dispense`, null, { params: { pharmacistId } }),
   cancel: (id) => api.patch(`/api/prescriptions/${id}/cancel`),
+  getDispensed: (params) => api.get('/api/prescriptions', { params: { ...params, status: 'DISPENSED' } }),
 }
