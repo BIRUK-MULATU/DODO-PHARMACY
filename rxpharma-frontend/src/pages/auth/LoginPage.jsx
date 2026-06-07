@@ -109,7 +109,7 @@ export default function LoginPage() {
             <span>admin@rxpharma.com</span>
             <span>Admin@1234</span>
             <span>pharmacist@rxpharma.com</span>
-            <span>Pharma@1234</span>
+            <span>hi</span>
             <span>cashier@rxpharma.com</span>
             <span>Cashier@1234</span>
             <span>supplier@rxpharma.com</span>
