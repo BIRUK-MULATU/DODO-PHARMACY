@@ -8,5 +8,7 @@ import java.util.List;
 @Repository
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     List<Supplier> findByStatus(Supplier.Status status);
+    List<Supplier> findBySupplierType(Supplier.SupplierType supplierType);
+    List<Supplier> findBySupplierTypeAndStatus(Supplier.SupplierType supplierType, Supplier.Status status);
     boolean existsByEmail(String email);
 }
