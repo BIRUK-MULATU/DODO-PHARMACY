@@ -13,5 +13,7 @@ public class SupplierResponse {
     private String email;
     private String phone;
     private String status;
+    private String supplierType;
+    private String address;
     private LocalDateTime createdAt;
 }
