@@ -1,6 +1,7 @@
 package com.rxpharma.service;
 
 import com.rxpharma.entity.Supplier;
+import com.rxpharma.dto.request.SupplierRequest;
 import com.rxpharma.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,34 +18,41 @@ public class SupplierService {
         return supplierRepository.findAll();
     }
 
+    public List<Supplier> getSuppliersByType(Supplier.SupplierType supplierType) {
+        return supplierRepository.findBySupplierType(supplierType);
+    }
+
     public Supplier getSupplierById(Long id) {
         return supplierRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
     }
 
-    public Supplier createSupplier(String companyName, String contactPerson,
-                                   String email, String phone) {
-        if (supplierRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email already in use: " + email);
+    public Supplier createSupplier(SupplierRequest request) {
+        if (supplierRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already in use: " + request.getEmail());
         }
         Supplier supplier = Supplier.builder()
-                .companyName(companyName)
-                .contactPerson(contactPerson)
-                .email(email)
-                .phone(phone)
+                .companyName(request.getCompanyName())
+                .contactPerson(request.getContactPerson())
+                .email(request.getEmail())
+                .phone(request.getPhone())
                 .status(Supplier.Status.ACTIVE)
+                .supplierType(request.getSupplierType() != null
+                        ? request.getSupplierType() : Supplier.SupplierType.WHOLESALER)
+                .address(request.getAddress())
                 .build();
         return supplierRepository.save(supplier);
     }
 
-    public Supplier updateSupplier(Long id, String companyName, String contactPerson,
-                                   String email, String phone, Supplier.Status status) {
+    public Supplier updateSupplier(Long id, SupplierRequest request) {
         Supplier supplier = getSupplierById(id);
-        supplier.setCompanyName(companyName);
-        supplier.setContactPerson(contactPerson);
-        supplier.setEmail(email);
-        supplier.setPhone(phone);
-        supplier.setStatus(status);
+        supplier.setCompanyName(request.getCompanyName());
+        supplier.setContactPerson(request.getContactPerson());
+        supplier.setEmail(request.getEmail());
+        supplier.setPhone(request.getPhone());
+        if (request.getStatus() != null) supplier.setStatus(request.getStatus());
+        if (request.getSupplierType() != null) supplier.setSupplierType(request.getSupplierType());
+        if (request.getAddress() != null) supplier.setAddress(request.getAddress());
         return supplierRepository.save(supplier);
     }
 
