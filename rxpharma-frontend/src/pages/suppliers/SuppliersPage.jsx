@@ -39,16 +39,16 @@ export default function SuppliersPage() {
     address: ''
   })
 
-  const fetchSuppliers = async () => {
+  const fetchSuppliers = async (type = '') => {
     setLoading(true)
     try {
-      const res = await supplierApi.getAll()
+      const res = await supplierApi.getAll(type || undefined)
       setSuppliers(res.data)
     } catch { setError('Failed to load suppliers') }
     finally { setLoading(false) }
   }
 
-  useEffect(() => { fetchSuppliers() }, [])
+  useEffect(() => { fetchSuppliers(filterType) }, [filterType])
 
   const openCreate = () => {
     setEditSupplier(null)
@@ -88,7 +88,7 @@ export default function SuppliersPage() {
         setSuccess('Supplier created successfully')
       }
       setShowModal(false)
-      fetchSuppliers()
+      fetchSuppliers(filterType)
     } catch (err) {
       setError(err.response?.data?.message || 'Operation failed')
     }
@@ -99,18 +99,15 @@ export default function SuppliersPage() {
     try {
       await supplierApi.delete(id)
       setSuccess('Supplier deleted')
-      fetchSuppliers()
+      fetchSuppliers(filterType)
     } catch { setError('Delete failed') }
   }
 
-  const filtered = suppliers.filter(s => {
-    const matchSearch =
-      s.companyName.toLowerCase().includes(search.toLowerCase()) ||
-      s.email.toLowerCase().includes(search.toLowerCase()) ||
-      s.contactPerson.toLowerCase().includes(search.toLowerCase())
-    const matchType = filterType ? (s.supplierType || 'WHOLESALER') === filterType : true
-    return matchSearch && matchType
-  })
+  const filtered = suppliers.filter(s =>
+    s.companyName.toLowerCase().includes(search.toLowerCase()) ||
+    s.email.toLowerCase().includes(search.toLowerCase()) ||
+    s.contactPerson.toLowerCase().includes(search.toLowerCase())
+  )
 
   const typeColor = (type) => {
     if (type === 'IMPORTER') return 'purple'
