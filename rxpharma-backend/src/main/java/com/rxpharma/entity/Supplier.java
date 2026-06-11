@@ -32,14 +32,20 @@ public class Supplier {
     @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     private Status status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "supplier_type", nullable = false, length = 20)
+    @Builder.Default
+    private SupplierType supplierType = SupplierType.WHOLESALER;
+
+    @Column(length = 255)
+    private String address;
+
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
     @JsonIgnore
-
     private List<Drug> drugs;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
 
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
     private List<PurchaseOrder> purchaseOrders;
@@ -47,9 +53,14 @@ public class Supplier {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        if (this.supplierType == null) this.supplierType = SupplierType.WHOLESALER;
     }
 
     public enum Status {
         ACTIVE, ON_HOLD
+    }
+
+    public enum SupplierType {
+        WHOLESALER, IMPORTER
     }
 }
