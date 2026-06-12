@@ -5,6 +5,8 @@ import com.rxpharma.dto.request.PrescriptionRequest;
 import com.rxpharma.dto.response.PrescriptionDrugResponse;
 import com.rxpharma.dto.response.PrescriptionResponse;
 import com.rxpharma.entity.Prescription;
+import com.rxpharma.entity.User;
+import com.rxpharma.repository.UserRepository;
 import com.rxpharma.service.PrescriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +25,7 @@ import java.util.List;
 public class PrescriptionController {
 
     private final PrescriptionService prescriptionService;
+    private final UserRepository userRepository;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','CASHIER')")
@@ -79,13 +83,18 @@ public class PrescriptionController {
         ));
     }
 
+    // FIXED: Allow both ADMIN and PHARMACIST to dispense
+    // Uses the authenticated user's own ID — no more hardcoded pharmacistId param
     @PatchMapping("/{id}/dispense")
-    @PreAuthorize("hasRole('PHARMACIST')")
+    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST')")
     public ResponseEntity<PrescriptionResponse> dispensePrescription(
             @PathVariable Long id,
-            @RequestParam Long pharmacistId) {
+            Authentication authentication) {
+        String email = authentication.getName();
+        User dispenser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
         return ResponseEntity.ok(toResponse(
-                prescriptionService.dispensePrescription(id, pharmacistId)));
+                prescriptionService.dispensePrescription(id, dispenser.getId())));
     }
 
     @PatchMapping("/{id}/cancel")

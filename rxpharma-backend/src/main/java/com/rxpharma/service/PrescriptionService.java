@@ -49,27 +49,32 @@ public class PrescriptionService {
     }
 
     @Transactional
-    public Prescription dispensePrescription(Long prescriptionId, Long pharmacistId) {
-        Prescription prescription = getPrescriptionById(prescriptionId);
+    public Prescription dispensePrescription(Long prescriptionId, Long dispenserId) {
+        // Re-fetch inside transaction to avoid LazyInitializationException
+        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+                .orElseThrow(() -> new RuntimeException("Prescription not found with id: " + prescriptionId));
 
         if (prescription.getStatus() != Prescription.Status.PENDING) {
             throw new RuntimeException("Only PENDING prescriptions can be dispensed");
         }
 
-        User pharmacist = userRepository.findById(pharmacistId)
-                .orElseThrow(() -> new RuntimeException("Pharmacist not found"));
+        User dispenser = userRepository.findById(dispenserId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + dispenserId));
 
+        // Deduct stock for each drug in the prescription
         for (PrescriptionDrug pd : prescription.getPrescriptionDrugs()) {
-            Drug drug = pd.getDrug();
+            Drug drug = drugRepository.findById(pd.getDrug().getId())
+                    .orElseThrow(() -> new RuntimeException("Drug not found: " + pd.getDrug().getId()));
             if (drug.getStockQty() < pd.getQuantity()) {
-                throw new RuntimeException("Insufficient stock for drug: " + drug.getName());
+                throw new RuntimeException("Insufficient stock for drug: " + drug.getName()
+                        + " (available: " + drug.getStockQty() + ", required: " + pd.getQuantity() + ")");
             }
             drug.setStockQty(drug.getStockQty() - pd.getQuantity());
             drugRepository.save(drug);
         }
 
         prescription.setStatus(Prescription.Status.DISPENSED);
-        prescription.setDispensedBy(pharmacist);
+        prescription.setDispensedBy(dispenser);
         return prescriptionRepository.save(prescription);
     }
 
@@ -98,6 +103,7 @@ public class PrescriptionService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public PrescriptionDrugResponse addDrugToPrescription(Long prescriptionId,
                                                           Long drugId,
                                                           int quantity,

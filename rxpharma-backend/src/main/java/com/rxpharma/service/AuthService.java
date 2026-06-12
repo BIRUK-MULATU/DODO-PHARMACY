@@ -25,13 +25,13 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordResetTokenRepository tokenRepository;
 
-    public String login(String email, String password) {
+    // NOW returns User instead of String
+    public User login(String email, String password) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
         );
-        User user = userRepository.findByEmail(email)
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return jwtUtil.generateToken(user.getEmail(), user.getRole().name());
     }
 
     public String register(String fullName, String email,
@@ -55,10 +55,8 @@ public class AuthService {
                 .orElseThrow(() -> new com.rxpharma.exception.ResourceNotFoundException(
                         "No account found with email: " + email));
 
-        // Delete any existing tokens for this user
         tokenRepository.deleteByUserId(user.getId());
 
-        // Generate a new token
         String token = UUID.randomUUID().toString().replace("-", "").substring(0, 32).toUpperCase();
 
         PasswordResetToken resetToken = PasswordResetToken.builder()
@@ -69,9 +67,6 @@ public class AuthService {
                 .build();
 
         tokenRepository.save(resetToken);
-
-        // In production this token would be emailed to the user
-        // For now we return it directly in the response
         return token;
     }
 
