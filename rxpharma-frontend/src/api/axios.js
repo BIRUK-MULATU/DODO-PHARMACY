@@ -1,7 +1,10 @@
 import axios from 'axios'
 
+const API_URL = import.meta.env.VITE_API_URL 
+  || 'https://rxpharma-backend-dodopharmacy.up.railway.app'
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8083',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
