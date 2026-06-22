@@ -5,6 +5,7 @@ import { supplierApi } from '../../api/supplierApi'
 import { useAuth } from '../../context/AuthContext'
 import CategoriesManager from '../../components/common/CategoriesManager'
 import { getCategories } from '../../utils/constants'
+import { useSearchParams } from 'react-router-dom'
 
 const Badge = ({ children, color }) => {
   const colors = {
@@ -19,6 +20,7 @@ const Badge = ({ children, color }) => {
     </span>
   )
 }
+
 
 export default function DrugsPage() {
   const { hasRole } = useAuth()
@@ -37,6 +39,9 @@ export default function DrugsPage() {
   const [selectedDrug, setSelectedDrug] = useState(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [searchParams] = useSearchParams()
+  const lowStockFilter = searchParams.get('lowStock') === 'true'
+  const expiringSoonFilter = searchParams.get('expiringSoon') === 'true'
 
   const [form, setForm] = useState({
     name: '', sku: '', category: '', price: '',
@@ -47,19 +52,38 @@ export default function DrugsPage() {
     quantity: '', type: 'ADD', reason: ''
   })
 
-  const fetchDrugs = async () => {
-    setLoading(true)
-    try {
-      const params = { page, size: 10 }
-      if (category) params.category = category
-      const res = await drugApi.search(params)
-      setDrugs(res.data.content)
-      setTotalPages(res.data.totalPages)
-    } catch { setError('Failed to load drugs') }
-    finally { setLoading(false) }
-  }
+  // const fetchDrugs = async () => {
+  //   setLoading(true)
+  //   try {
+  //     const params = { page, size: 10 }
+  //     if (category) params.category = category
+  //     const res = await drugApi.search(params)
+  //     setDrugs(res.data.content)
+  //     setTotalPages(res.data.totalPages)
+  //   } catch { setError('Failed to load drugs') }
+  //   finally { setLoading(false) }
+  // }
 
-  useEffect(() => { fetchDrugs() }, [page, category])
+  // useEffect(() => { fetchDrugs() }, [page, category])
+  const fetchDrugs = async () => {
+  setLoading(true)
+  try {
+    const params = { page, size: 10 }
+    if (category) params.category = category
+    if (lowStockFilter) params.lowStock = true
+    if (expiringSoonFilter) {
+      const cutoff = new Date()
+      cutoff.setDate(cutoff.getDate() + 30)
+      params.expiringBefore = cutoff.toISOString().split('T')[0]
+    }
+    const res = await drugApi.search(params)
+    setDrugs(res.data.content)
+    setTotalPages(res.data.totalPages)
+  } catch { setError('Failed to load drugs') }
+  finally { setLoading(false) }
+}
+
+useEffect(() => { fetchDrugs() }, [page, category, lowStockFilter, expiringSoonFilter])
 
   useEffect(() => {
     supplierApi.getAll()

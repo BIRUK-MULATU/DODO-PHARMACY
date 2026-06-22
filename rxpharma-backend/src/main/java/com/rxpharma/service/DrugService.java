@@ -54,14 +54,34 @@ public class DrugService {
         return drugRepository.save(drug);
     }
 
+//    public Drug updateDrug(Long id, String name, String category,
+//                           BigDecimal price, int stockQty, LocalDate expiryDate) {
+//        Drug drug = getDrugById(id);
+//        drug.setName(name);
+//        drug.setCategory(category);
+//        drug.setPrice(price);
+//        drug.setStockQty(stockQty);
+//        drug.setExpiryDate(expiryDate);
+//        return drugRepository.save(drug);
+//
+//    }
+
     public Drug updateDrug(Long id, String name, String category,
-                           BigDecimal price, int stockQty, LocalDate expiryDate) {
+                           BigDecimal price, int stockQty,
+                           LocalDate expiryDate, Long supplierId) {
         Drug drug = getDrugById(id);
         drug.setName(name);
         drug.setCategory(category);
         drug.setPrice(price);
         drug.setStockQty(stockQty);
         drug.setExpiryDate(expiryDate);
+
+        if (supplierId != null) {
+            Supplier supplier = supplierRepository.findById(supplierId)
+                    .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
+            drug.setSupplier(supplier);
+        }
+
         return drugRepository.save(drug);
     }
 
