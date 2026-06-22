@@ -1,4 +1,11 @@
 package com.rxpharma.repository;
 
-public class PurchaseOrderItemRepository {
+import com.rxpharma.entity.PurchaseOrderItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+
+@Repository
+public interface PurchaseOrderItemRepository extends JpaRepository<PurchaseOrderItem, Long> {
+    List<PurchaseOrderItem> findByPurchaseOrderId(Long purchaseOrderId);
 }

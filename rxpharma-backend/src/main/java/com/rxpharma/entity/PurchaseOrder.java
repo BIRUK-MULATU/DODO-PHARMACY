@@ -5,6 +5,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "purchase_orders")
@@ -36,6 +37,10 @@ public class PurchaseOrder {
 
     @Column(name = "delivery_date")
     private LocalDate deliveryDate;
+
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PurchaseOrderItem> items = new java.util.ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

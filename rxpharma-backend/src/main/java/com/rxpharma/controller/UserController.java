@@ -26,6 +26,13 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    // NEW — must be declared BEFORE /{id} to avoid path conflicts
+    @GetMapping("/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<User>> getPendingUsers() {
+        return ResponseEntity.ok(userService.getPendingUsers());
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
@@ -70,6 +77,7 @@ public class UserController {
         userService.adminResetPassword(id, body.get("newPassword"));
         return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
+
     @PatchMapping("/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> updateRole(
@@ -80,6 +88,17 @@ public class UserController {
                 "message", "Role updated successfully",
                 "userId", updated.getId().toString(),
                 "newRole", updated.getRole().name()
+        ));
+    }
+
+    // NEW — approve a pending Google sign-up
+    @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> approveUser(@PathVariable Long id) {
+        User updated = userService.approveUser(id);
+        return ResponseEntity.ok(Map.of(
+                "message", "User approved successfully",
+                "userId", updated.getId().toString()
         ));
     }
 }

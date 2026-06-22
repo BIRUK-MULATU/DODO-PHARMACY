@@ -1,23 +1,28 @@
 package com.rxpharma.dto.request;
 
-import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class PurchaseOrderRequest {
 
-    @NotNull(message = "Supplier ID is required")
+    @NotNull(message = "Supplier is required")
     private Long supplierId;
 
-    @NotNull(message = "Ordered by user ID is required")
     private Long orderedById;
 
-    @NotNull(message = "Total cost is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Total cost must be greater than 0")
     private BigDecimal totalCost;
 
     private LocalDate deliveryDate;
+
+    private String notes;
+
+    @NotEmpty(message = "At least one item is required")
+    @Valid
+    private List<PurchaseOrderItemRequest> items;
 }
