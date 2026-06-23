@@ -21,7 +21,7 @@ const statusColor = (status) => {
 }
 
 export default function PrescriptionsPage() {
-  const { user, hasRole } = useAuth()
+  const { hasRole } = useAuth()
   const [prescriptions, setPrescriptions] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

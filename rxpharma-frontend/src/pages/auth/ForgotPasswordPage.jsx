@@ -57,6 +57,12 @@ export default function ForgotPasswordPage() {
           </div>
         )}
 
+        {message && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">
+            {message}
+          </div>
+        )}
+
         {step === 1 && (
           <form onSubmit={handleForgot} className="space-y-4">
             <p className="text-sm text-gray-500">Enter your email to receive a reset token.</p>
