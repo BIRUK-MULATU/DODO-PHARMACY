@@ -15,6 +15,7 @@ public class DrugResponse {
     private BigDecimal price;
     private int stockQty;
     private LocalDate expiryDate;
+    private Long supplierId;
     private String supplierName;
     private boolean lowStock;
     private boolean expiringSoon;

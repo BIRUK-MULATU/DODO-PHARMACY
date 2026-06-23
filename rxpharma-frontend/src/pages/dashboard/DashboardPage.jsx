@@ -27,8 +27,11 @@ const GradientCard = ({ title, value, subtitle, gradient, icon, onClick, animate
   </div>
 )
 
-const AlertCard = ({ title, value, subtitle, bgColor, textColor, borderColor, icon }) => (
-  <div className={`rounded-2xl p-5 border-2 ${bgColor} ${borderColor} transform transition-all duration-300 hover:scale-105`}>
+const AlertCard = ({ title, value, subtitle, bgColor, textColor, borderColor, icon, onClick }) => (
+  <div
+    onClick={onClick}
+    className={`rounded-2xl p-5 border-2 ${bgColor} ${borderColor} transform transition-all duration-300 hover:scale-105 cursor-pointer`}
+  >
     <div className="flex items-center justify-between">
       <div>
         <p className={`text-3xl font-bold ${textColor}`}>{value ?? '—'}</p>
@@ -185,7 +188,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Alert Cards */}
+      {/* Alert Cards — now clickable, navigate to filtered Drugs page */}
       <h3 className="text-lg font-bold text-gray-900 mb-4">⚠️ Alerts</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
         <AlertCard
@@ -195,6 +198,7 @@ export default function DashboardPage() {
           bgColor="bg-red-50"
           borderColor="border-red-200"
           textColor="text-red-600"
+          onClick={() => navigate('/drugs?lowStock=true')}
           icon={<svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>}
         />
         <AlertCard
@@ -204,6 +208,7 @@ export default function DashboardPage() {
           bgColor="bg-yellow-50"
           borderColor="border-yellow-200"
           textColor="text-yellow-600"
+          onClick={() => navigate('/drugs?expiringSoon=true')}
           icon={<svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>}
         />
       </div>

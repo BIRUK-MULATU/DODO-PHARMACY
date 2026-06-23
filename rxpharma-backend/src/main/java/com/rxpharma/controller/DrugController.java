@@ -26,7 +26,7 @@ public class DrugController {
     private final DrugService drugService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','CASHIER','SUPPLIER_MANAGER')")
     public ResponseEntity<Page<DrugResponse>> searchDrugs(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Long supplierId,
@@ -42,7 +42,7 @@ public class DrugController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','CASHIER','SUPPLIER_MANAGER')")
     public ResponseEntity<DrugResponse> getDrugById(@PathVariable Long id) {
         return ResponseEntity.ok(toResponse(drugService.getDrugById(id)));
     }
@@ -90,13 +90,15 @@ public class DrugController {
         return ResponseEntity.ok(toResponse(drug));
     }
 
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST')")
     public ResponseEntity<DrugResponse> updateDrug(@PathVariable Long id,
                                                    @RequestBody DrugRequest request) {
         Drug drug = drugService.updateDrug(
                 id, request.getName(), request.getCategory(),
-                request.getPrice(), request.getStockQty(), request.getExpiryDate()
+                request.getPrice(), request.getStockQty(), request.getExpiryDate(),
+                request.getSupplierId()
         );
         return ResponseEntity.ok(toResponse(drug));
     }
@@ -118,18 +120,20 @@ public class DrugController {
         return ResponseEntity.ok(toResponse(drug));
     }
 
-    private DrugResponse toResponse(Drug drug) {
-        return DrugResponse.builder()
-                .id(drug.getId())
-                .name(drug.getName())
-                .sku(drug.getSku())
-                .category(drug.getCategory())
-                .price(drug.getPrice())
-                .stockQty(drug.getStockQty())
-                .expiryDate(drug.getExpiryDate())
-                .supplierName(drug.getSupplier() != null ? drug.getSupplier().getCompanyName() : null)
-                .lowStock(drug.getStockQty() < 10)
-                .expiringSoon(drug.getExpiryDate().isBefore(LocalDate.now().plusDays(30)))
-                .build();
-    }
+
+private DrugResponse toResponse(Drug drug) {
+    return DrugResponse.builder()
+            .id(drug.getId())
+            .name(drug.getName())
+            .sku(drug.getSku())
+            .category(drug.getCategory())
+            .price(drug.getPrice())
+            .stockQty(drug.getStockQty())
+            .expiryDate(drug.getExpiryDate())
+            .supplierId(drug.getSupplier() != null ? drug.getSupplier().getId() : null)
+            .supplierName(drug.getSupplier() != null ? drug.getSupplier().getCompanyName() : "Unassigned")
+            .lowStock(drug.getStockQty() < 10)
+            .expiringSoon(drug.getExpiryDate() != null && drug.getExpiryDate().isBefore(LocalDate.now().plusDays(30)))
+            .build();
+}
 }

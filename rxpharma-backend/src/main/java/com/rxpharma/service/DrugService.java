@@ -54,14 +54,34 @@ public class DrugService {
         return drugRepository.save(drug);
     }
 
+//    public Drug updateDrug(Long id, String name, String category,
+//                           BigDecimal price, int stockQty, LocalDate expiryDate) {
+//        Drug drug = getDrugById(id);
+//        drug.setName(name);
+//        drug.setCategory(category);
+//        drug.setPrice(price);
+//        drug.setStockQty(stockQty);
+//        drug.setExpiryDate(expiryDate);
+//        return drugRepository.save(drug);
+//
+//    }
+
     public Drug updateDrug(Long id, String name, String category,
-                           BigDecimal price, int stockQty, LocalDate expiryDate) {
+                           BigDecimal price, int stockQty,
+                           LocalDate expiryDate, Long supplierId) {
         Drug drug = getDrugById(id);
         drug.setName(name);
         drug.setCategory(category);
         drug.setPrice(price);
         drug.setStockQty(stockQty);
         drug.setExpiryDate(expiryDate);
+
+        if (supplierId != null) {
+            Supplier supplier = supplierRepository.findById(supplierId)
+                    .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
+            drug.setSupplier(supplier);
+        }
+
         return drugRepository.save(drug);
     }
 
@@ -83,14 +103,14 @@ public class DrugService {
         LocalDate cutoff = LocalDate.now().plusDays(days);
         return drugRepository.findAll()
                 .stream()
-                .filter(d -> d.getExpiryDate().isBefore(cutoff))
+                .filter(d -> d.getExpiryDate() != null && d.getExpiryDate().isBefore(cutoff))
                 .collect(Collectors.toList());
     }
 
     public List<Drug> getExpiredDrugs() {
         return drugRepository.findAll()
                 .stream()
-                .filter(d -> d.getExpiryDate().isBefore(LocalDate.now()))
+                .filter(d -> d.getExpiryDate() != null && d.getExpiryDate().isBefore(LocalDate.now()))
                 .collect(Collectors.toList());
     }
     public Drug adjustStock(Long id, int quantity,

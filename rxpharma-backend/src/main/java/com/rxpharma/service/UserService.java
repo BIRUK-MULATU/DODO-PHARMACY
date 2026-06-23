@@ -69,9 +69,22 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+
     public User updateRole(Long id, User.Role role) {
         User user = getUserById(id);
         user.setRole(role);
         return userRepository.save(user);
+    }
+
+    // NEW — approve a pending Google sign-up
+    public User approveUser(Long id) {
+        User user = getUserById(id);
+        user.setApproved(true);
+        return userRepository.save(user);
+    }
+
+    // NEW — list all users awaiting admin approval
+    public List<User> getPendingUsers() {
+        return userRepository.findByApprovedFalse();
     }
 }

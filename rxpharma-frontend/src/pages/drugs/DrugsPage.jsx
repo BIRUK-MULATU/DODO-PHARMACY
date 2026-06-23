@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { drugApi } from '../../api/drugApi'
 import { supplierApi } from '../../api/supplierApi'
@@ -22,6 +23,10 @@ const Badge = ({ children, color }) => {
 
 export default function DrugsPage() {
   const { hasRole } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const lowStockFilter = searchParams.get('lowStock') === 'true'
+  const expiringSoonFilter = searchParams.get('expiringSoon') === 'true'
+
   const [drugs, setDrugs] = useState([])
   const [suppliers, setSuppliers] = useState([])
   const [categories, setCategories] = useState(getCategories())
@@ -50,7 +55,7 @@ export default function DrugsPage() {
   const fetchDrugs = async () => {
     setLoading(true)
     try {
-      const params = { page, size: 10 }
+      const params = { page, size: 50 }
       if (category) params.category = category
       const res = await drugApi.search(params)
       setDrugs(res.data.content)
@@ -78,7 +83,7 @@ export default function DrugsPage() {
     setForm({
       name: drug.name, sku: drug.sku, category: drug.category,
       price: drug.price, stockQty: drug.stockQty,
-      expiryDate: drug.expiryDate, supplierId: drug.supplierId || ''
+      expiryDate: drug.expiryDate, supplierId: drug.supplierId ? String(drug.supplierId) : ''
     })
     setShowModal(true)
   }
@@ -97,7 +102,7 @@ export default function DrugsPage() {
         ...form,
         price: parseFloat(form.price),
         stockQty: parseInt(form.stockQty),
-        supplierId: parseInt(form.supplierId)
+        supplierId: form.supplierId ? parseInt(form.supplierId) : null
       }
       if (editDrug) {
         await drugApi.update(editDrug.id, data)
@@ -137,10 +142,20 @@ export default function DrugsPage() {
     } catch { setError('Delete failed') }
   }
 
-  const filtered = drugs.filter(d =>
-    d.name.toLowerCase().includes(search.toLowerCase()) ||
-    d.sku.toLowerCase().includes(search.toLowerCase())
-  )
+  const clearAlertFilter = () => {
+    searchParams.delete('lowStock')
+    searchParams.delete('expiringSoon')
+    setSearchParams(searchParams)
+  }
+
+  const filtered = drugs.filter(d => {
+    const matchSearch =
+      d.name.toLowerCase().includes(search.toLowerCase()) ||
+      d.sku.toLowerCase().includes(search.toLowerCase())
+    const matchLowStock = lowStockFilter ? d.lowStock : true
+    const matchExpiringSoon = expiringSoonFilter ? d.expiringSoon : true
+    return matchSearch && matchLowStock && matchExpiringSoon
+  })
 
   return (
     <DashboardLayout title="Drug Management">
@@ -152,6 +167,18 @@ export default function DrugsPage() {
       {success && (
         <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex justify-between">
           <span>{success}</span><button onClick={() => setSuccess('')}>✕</button>
+        </div>
+      )}
+
+      {/* Active alert filter banner */}
+      {(lowStockFilter || expiringSoonFilter) && (
+        <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm flex justify-between items-center">
+          <span>
+            Showing only <strong>{lowStockFilter ? 'low stock' : 'expiring soon'}</strong> drugs
+          </span>
+          <button onClick={clearAlertFilter} className="text-blue-700 font-medium hover:underline">
+            Clear filter ✕
+          </button>
         </div>
       )}
 
@@ -361,6 +388,7 @@ export default function DrugsPage() {
                   <input required type="date" value={form.expiryDate}
                     onChange={e => setForm({...form, expiryDate: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                  <p className="text-xs text-gray-400 mt-1">You can enter past, current, or future dates.</p>
                 </div>
               </div>
               <div>
@@ -369,7 +397,7 @@ export default function DrugsPage() {
                   onChange={e => setForm({...form, supplierId: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="">Select supplier</option>
-                  {suppliers.map(s => <option key={s.id} value={s.id}>{s.companyName}</option>)}
+                  {suppliers.map(s => <option key={s.id} value={String(s.id)}>{s.companyName}</option>)}
                 </select>
               </div>
               <div className="flex gap-3 pt-2">

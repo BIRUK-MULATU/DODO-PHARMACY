@@ -62,10 +62,17 @@ export default function PurchaseOrdersPage() {
 
   useEffect(() => { fetchOrders() }, [page])
 
-  useEffect(() => {
-    supplierApi.getAll().then(res => setSuppliers(res.data)).catch(() => {})
-    drugApi.search({ page: 0, size: 100 }).then(res => setDrugs(res.data.content)).catch(() => {})
-  }, [])
+  // useEffect(() => {
+  //   supplierApi.getAll().then(res => setSuppliers(res.data)).catch(() => {})
+  //   drugApi.search({ page: 0, size: 100 }).then(res => setDrugs(res.data.content)).catch(() => {})
+  // }, [])
+
+      useEffect(() => {
+      supplierApi.getAll().then(res => setSuppliers(res.data)).catch(() => {})
+      drugApi.search({ page: 0, size: 100 })
+        .then(res => setDrugs(res.data.content))
+        .catch(() => setError('Failed to load medicine list — check your permissions'))
+      }, [])
 
   const addItem = () => setOrderItems([...orderItems, { drugId: '', quantity: 1, unitCost: '' }])
   const removeItem = (i) => setOrderItems(orderItems.filter((_, idx) => idx !== i))
@@ -73,11 +80,6 @@ export default function PurchaseOrdersPage() {
     const updated = [...orderItems]
     updated[i][field] = value
     setOrderItems(updated)
-  }
-
-  const getDrugName = (drugId) => {
-    const drug = drugs.find(d => d.id === parseInt(drugId))
-    return drug ? drug.name : '—'
   }
 
   const calcTotal = () => orderItems.reduce((sum, item) => {
@@ -96,13 +98,12 @@ export default function PurchaseOrdersPage() {
       const totalCost = form.totalCost ? parseFloat(form.totalCost) : calcTotal()
       await purchaseOrderApi.create({
         supplierId: parseInt(form.supplierId),
-        orderedById: user?.id || 4,
+        orderedById: user?.id || null,
         totalCost,
         deliveryDate: form.deliveryDate || null,
         notes: form.notes,
         items: validItems.map(i => ({
           drugId: parseInt(i.drugId),
-          drugName: getDrugName(i.drugId),
           quantity: parseInt(i.quantity),
           unitCost: parseFloat(i.unitCost) || 0
         }))
@@ -154,14 +155,6 @@ export default function PurchaseOrdersPage() {
   const openDetail = (order) => {
     setSelectedOrder(order)
     setShowDetailModal(true)
-  }
-
-  const getStoredItems = (order) => {
-    try {
-      const key = `po_items_${order.id}`
-      const stored = localStorage.getItem(key)
-      return stored ? JSON.parse(stored) : []
-    } catch { return [] }
   }
 
   return (
@@ -221,7 +214,7 @@ export default function PurchaseOrdersPage() {
               ) : orders.length === 0 ? (
                 <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">No purchase orders found</td></tr>
               ) : orders.map(order => {
-                const items = getStoredItems(order)
+                const items = order.items || []
                 return (
                   <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-gray-400 text-xs">#{order.id}</td>
@@ -412,13 +405,13 @@ export default function PurchaseOrdersPage() {
                 </div>
               </div>
 
-              {/* Medicine Items List */}
+              {/* Medicine Items List — now from real backend data */}
               <div>
                 <h4 className="text-sm font-semibold text-gray-900 mb-3">
                   Medicine Items Ordered
                 </h4>
                 {(() => {
-                  const items = getStoredItems(selectedOrder)
+                  const items = selectedOrder.items || []
                   return items.length === 0 ? (
                     <div className="bg-gray-50 rounded-xl p-4 text-center">
                       <p className="text-sm text-gray-400">No item details available</p>
@@ -426,8 +419,8 @@ export default function PurchaseOrdersPage() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {items.map((item, i) => (
-                        <div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+                      {items.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
                           <div>
                             <p className="text-sm font-medium text-gray-900">{item.drugName}</p>
                             <p className="text-xs text-gray-400">
@@ -436,7 +429,7 @@ export default function PurchaseOrdersPage() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-semibold text-blue-600">
-                              ETB {((item.quantity || 0) * (item.unitCost || 0)).toFixed(2)}
+                              ETB {parseFloat(item.subtotal || 0).toFixed(2)}
                             </p>
                           </div>
                         </div>

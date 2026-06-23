@@ -39,9 +39,14 @@ public class AuthController {
     private String googleClientId;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
+    public ResponseEntity<?> login(
             @Valid @RequestBody LoginRequest request) {
         User user = authService.login(request.getEmail(), request.getPassword());
+        if (!user.isApproved()) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "message", "Your account is pending admin approval."
+            ));
+        }
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
         return ResponseEntity.ok(new AuthResponse(
                 token, user.getId(), user.getEmail(),
@@ -82,33 +87,41 @@ public class AuthController {
             String email = payload.getEmail();
             String fullName = (String) payload.get("name");
 
-            // Find existing user or auto-create with PHARMACIST role
-            User user = userRepository.findByEmail(email).orElseGet(() -> {
+            // Check if user already exists
+            User existing = userRepository.findByEmail(email).orElse(null);
+
+            if (existing == null) {
+                // New Google sign-in — create as PENDING, NOT approved
                 User newUser = User.builder()
                         .email(email)
                         .fullName(fullName != null ? fullName : email)
-                        .password(passwordEncoder.encode(UUID.randomUUID().toString()))
-                        .role(User.Role.PHARMACIST)
+                        .password(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                        .role(User.Role.CASHIER) // default lowest-privilege role
+                        .approved(false)
+                        .authProvider("GOOGLE")
                         .build();
-                return userRepository.save(newUser);
-            });
+                userRepository.save(newUser);
+                return ResponseEntity.status(403).body(Map.of(
+                        "message", "Your account has been created but is pending admin approval. Please contact an administrator."
+                ));
+            }
 
-            String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+            if (!existing.isApproved()) {
+                return ResponseEntity.status(403).body(Map.of(
+                        "message", "Your account is pending admin approval. Please contact an administrator."
+                ));
+            }
+
+            String token = jwtUtil.generateToken(existing.getEmail(), existing.getRole().name());
             return ResponseEntity.ok(new AuthResponse(
-                    token, user.getId(), user.getEmail(),
-                    user.getFullName(), user.getRole().name()
+                    token, existing.getId(), existing.getEmail(),
+                    existing.getFullName(), existing.getRole().name()
             ));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Google authentication failed: " + e.getMessage()));
         }
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(
-            @RequestHeader("Authorization") String authHeader) {
-        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
     @PostMapping("/forgot-password")

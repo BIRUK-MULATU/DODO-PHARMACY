@@ -2,8 +2,10 @@ package com.rxpharma.controller;
 
 import com.rxpharma.dto.request.DeliverOrderRequest;
 import com.rxpharma.dto.request.PurchaseOrderRequest;
+import com.rxpharma.dto.response.PurchaseOrderItemResponse;
 import com.rxpharma.dto.response.PurchaseOrderResponse;
 import com.rxpharma.entity.PurchaseOrder;
+import com.rxpharma.entity.PurchaseOrderItem;
 import com.rxpharma.service.PurchaseOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/purchase-orders")
@@ -40,7 +46,8 @@ public class PurchaseOrderController {
             @Valid @RequestBody PurchaseOrderRequest request) {
         PurchaseOrder order = purchaseOrderService.createOrder(
                 request.getSupplierId(), request.getOrderedById(),
-                request.getTotalCost(), request.getDeliveryDate()
+                request.getTotalCost(), request.getDeliveryDate(),
+                request.getItems()
         );
         return ResponseEntity.ok(toResponse(order));
     }
@@ -72,6 +79,10 @@ public class PurchaseOrderController {
     }
 
     private PurchaseOrderResponse toResponse(PurchaseOrder order) {
+        List<PurchaseOrderItemResponse> itemResponses = order.getItems().stream()
+                .map(this::toItemResponse)
+                .collect(Collectors.toList());
+
         return PurchaseOrderResponse.builder()
                 .id(order.getId())
                 .supplierName(order.getSupplier().getCompanyName())
@@ -81,6 +92,19 @@ public class PurchaseOrderController {
                 .totalCost(order.getTotalCost())
                 .orderDate(order.getOrderDate())
                 .deliveryDate(order.getDeliveryDate())
+                .items(itemResponses)
+                .build();
+    }
+
+    private PurchaseOrderItemResponse toItemResponse(PurchaseOrderItem item) {
+        BigDecimal subtotal = item.getUnitCost().multiply(BigDecimal.valueOf(item.getQuantity()));
+        return PurchaseOrderItemResponse.builder()
+                .id(item.getId())
+                .drugId(item.getDrug().getId())
+                .drugName(item.getDrug().getName())
+                .quantity(item.getQuantity())
+                .unitCost(item.getUnitCost())
+                .subtotal(subtotal)
                 .build();
     }
 }

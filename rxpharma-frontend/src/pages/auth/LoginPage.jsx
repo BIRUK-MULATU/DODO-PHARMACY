@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { GoogleLogin } from '@react-oauth/google'
-import { authApi } from '../../api/authApi'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -141,10 +140,14 @@ export default function LoginPage() {
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-500 font-medium mb-2">Test Accounts:</p>
           <div className="grid grid-cols-2 gap-1 text-xs text-gray-400">
-            <span>admin@rxpharma.com</span><span>Admin@1234</span>
-            <span>pharmacist@rxpharma.com</span><span>hi</span>
-            <span>cashier@rxpharma.com</span><span>Cashier@1234</span>
-            <span>supplier@rxpharma.com</span><span>Supplier@1234</span>
+            <span>admin@rxpharma.com</span>
+            <span>Admin@1234</span>
+            <span>pharmacist@rxpharma.com</span>
+            <span>hi</span>
+            <span>cashier@rxpharma.com</span>
+            <span>Cashier@1234</span>
+            <span>supplier@rxpharma.com</span>
+            <span>Supplier@1234</span>
           </div>
         </div>
       </div>
