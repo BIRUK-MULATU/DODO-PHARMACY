@@ -46,11 +46,11 @@ export default function LoginPage() {
         <div className="inline-flex items-center justify-center w-70 h-70 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl mb-4 shadow-lg overflow-hidden">
           <img
             src="/image.svg"
-            alt="RxPharma Logo"
+            alt="DODO PHARMACY Logo"
             className="w-50 h-50 object-contain"
           />
         </div>
-          <h1 className="text-2xl font-bold text-primary-900">RxPharma</h1>
+          <h1 className="text-2xl font-bold text-primary-900">DODO PHARMACY</h1>
           <p className="text-primary-400 text-sm mt-1">Pharmacy Management System</p>
         </div>
 
