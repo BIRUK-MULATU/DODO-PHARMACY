@@ -47,7 +47,7 @@ export default function LoginPage() {
           <img
             src="/image.svg"
             alt="RxPharma Logo"
-            className="w-10 h-10 object-contain"
+            className="w-30 h-30 object-contain"
           />
         </div>
           <h1 className="text-2xl font-bold text-primary-900">RxPharma</h1>
