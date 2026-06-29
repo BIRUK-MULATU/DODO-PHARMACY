@@ -128,7 +128,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <img
       src="/image.svg"
       alt="DODO Pharmacy Logo"
-      className="w-full h-full object-contain"
+      className="w-full h-full object-contain rounded-lg"
     />
           </div>
           <div>
