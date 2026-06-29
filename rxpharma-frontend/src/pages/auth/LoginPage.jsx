@@ -47,7 +47,7 @@ export default function LoginPage() {
           <img
             src="/image.svg"
             alt="DODO PHARMACY Logo"
-            className="w-50 h-50 object-contain"
+            className="w-50 h-50 object-contain rounded -lg"
           />
         </div>
           <h1 className="text-2xl font-bold text-primary-900">DODO PHARMACY</h1>
