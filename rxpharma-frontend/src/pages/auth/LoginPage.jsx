@@ -43,7 +43,7 @@ export default function LoginPage() {
 
         {/* Logo */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl mb-4 shadow-lg overflow-hidden">
+        <div className="inline-flex items-center justify-center w-70 h-70 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl mb-4 shadow-lg overflow-hidden">
           <img
             src="/image.svg"
             alt="RxPharma Logo"
