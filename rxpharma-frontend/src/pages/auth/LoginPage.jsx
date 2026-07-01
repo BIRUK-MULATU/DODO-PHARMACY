@@ -139,8 +139,56 @@ export default function LoginPage() {
             />
           </div>
         </div>
-
+  Role hint
+         <div className="mt-6 p-4 bg-primary-50 rounded-lg">
+          <p className="text-xs text-primary-500 font-medium mb-2">Test Accounts:</p>
+          <div className="grid grid-cols-2 gap-1 text-xs text-gray-400">
+            <span>admin@rxpharma.com</span>
+             <span>rx123..?</span>
+             <span>pharmacist@rxpharma.com</span>
+             <span>pharma123..?</span>
+             <span>cashier@rxpharma.com</span>
+             <span>Cash??..</span>
+            <span>supplier@rxpharma.com</span>
+            <span>supp??..</span>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
+
+
+//  {/* Google Login Button */}
+//         <div className="flex justify-center w-full overflow-hidden">
+//           <div className="w-full max-w-full [&>div]:!w-full [&_iframe]:!w-full">
+//             <GoogleLogin
+//               onSuccess={handleGoogleSuccess}
+//               onError={() => setError('Google sign-in was cancelled or failed')}
+//               theme="outline"
+//               size="large"
+//               text="signin_with_google"
+//               shape="rectangular"
+//               width="100%"
+//             />
+//           </div>
+//         </div>
+
+//         {/*Role hint*/}
+//         <div className="mt-6 p-4 bg-primary-50 rounded-lg">
+//           <p className="text-xs text-primary-500 font-medium mb-2">Test Accounts:</p>
+//           <div className="grid grid-cols-2 gap-1 text-xs text-gray-400">
+//             <span>admin@rxpharma.com</span>
+//             <span>Admin@1234</span>
+//             <span>pharmacist@rxpharma.com</span>
+//             <span>hi</span>
+//             <span>cashier@rxpharma.com</span>
+//             <span>Cashier@1234</span>
+//             <span>supplier@rxpharma.com</span>
+//             <span>Supplier@1234</span>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }
